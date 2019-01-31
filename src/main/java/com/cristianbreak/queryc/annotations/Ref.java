@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2019. Cristian González Morante
+ */
+
 package com.cristianbreak.queryc.annotations;
 
 import java.lang.annotation.ElementType;

@@ -1,6 +1,6 @@
-/******************************************************************************
- * Copyright (c) 2019. QuantumStudio                                          *
- ******************************************************************************/
+/*
+ * Copyright (c) 2019. Cristian González Morante
+ */
 
 package com.cristianbreak.queryc.exceptions;
 
