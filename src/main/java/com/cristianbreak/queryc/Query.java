@@ -17,15 +17,14 @@ import java.util.function.Function;
 /**
  * Encapsulation of Criteria Query API
  *
- * @param <X> Root type
  * @param <R> Result type
  */
 @SuppressWarnings({"unused", "SameParameterValue"})
-public class Query<X, R> {
+public class Query<R> {
 
 	private CriteriaQuery<R> query;
 	private CriteriaBuilder cBuilder;
-	private Root<X> root;
+	private Root root;
 	private List<Join> joinList;
 	private List<Predicate> filterList;
 	private BiFunction<FromSupplier, CriteriaBuilder, Selection<? extends R>> selectionSupplier;
@@ -69,40 +68,40 @@ public class Query<X, R> {
 		return query.getResultType();
 	}
 
-	public Query<X, R> from(Class<X> from) {
+	public Query<R> from(Class from) {
 		this.root = query.from(from);
 		return this;
 	}
 
-	public Query<X, R> rootJoin(Attribute att) {
+	public Query<R> rootJoin(Attribute att) {
 		joinList.add(root.join(att.getName(), JoinType.INNER));
 		return this;
 	}
 
-	public Query<X, R> rootLeftJoin(Attribute att) {
+	public Query<R> rootLeftJoin(Attribute att) {
 		joinList.add(root.join(att.getName(), JoinType.LEFT));
 		return this;
 	}
 
-	public Query<X, R> rootRightJoin(Attribute att) {
+	public Query<R> rootRightJoin(Attribute att) {
 		joinList.add(root.join(att.getName(), JoinType.RIGHT));
 		return this;
 	}
 
-	public Query<X, R> rootJoin(Attribute att, JoinType type) {
+	public Query<R> rootJoin(Attribute att, JoinType type) {
 		joinList.add(root.join(att.getName(), type));
 		return this;
 	}
 
-	public Query<X, R> join(Attribute att) {
+	public Query<R> join(Attribute att) {
 		return join(att, JoinType.INNER);
 	}
 
-	public Query<X, R> join(Class from, Attribute to) {
+	public Query<R> join(Class from, Attribute to) {
 		return join(from, to, JoinType.INNER);
 	}
 
-	private Query<X, R> join(Class<?> from, Attribute to, JoinType type) {
+	private Query<R> join(Class<?> from, Attribute to, JoinType type) {
 		From leftPart = joinList.stream()
 								.filter(join -> join.getJavaType().equals(from))
 								.findFirst()
@@ -116,15 +115,15 @@ public class Query<X, R> {
 		return this;
 	}
 
-	public Query<X, R> leftJoin(Attribute att) {
+	public Query<R> leftJoin(Attribute att) {
 		return join(att, JoinType.LEFT);
 	}
 
-	public Query<X, R> rightJoin(Attribute att) {
+	public Query<R> rightJoin(Attribute att) {
 		return join(att, JoinType.RIGHT);
 	}
 
-	private Query<X, R> join(Attribute att, JoinType type) {
+	private Query<R> join(Attribute att, JoinType type) {
 		From leftPart;
 
 		if (joinList.isEmpty()) {
@@ -138,7 +137,7 @@ public class Query<X, R> {
 		return this;
 	}
 
-	public Query<X, R> select(BiFunction<FromSupplier, CriteriaBuilder, Selection<? extends R>> selectionSupplier) {
+	public Query<R> select(BiFunction<FromSupplier, CriteriaBuilder, Selection<? extends R>> selectionSupplier) {
 		this.selectionSupplier = selectionSupplier;
 		return this;
 	}
@@ -159,7 +158,7 @@ public class Query<X, R> {
 		return query.where(filterList.toArray(new Predicate[]{}));
 	}
 
-	public Query<X, R> where(List<Filter> filters) {
+	public Query<R> where(List<Filter> filters) {
 		for (Filter filter : filters) {
 			Predicate p = filter.apply(this::getFrom, cBuilder, query);
 			filterList.add(p);
@@ -172,21 +171,21 @@ public class Query<X, R> {
 		return this;
 	}
 
-	public Query<X, R> groupBy(Function<FromSupplier, Expression> groupByExpression) {
+	public Query<R> groupBy(Function<FromSupplier, Expression> groupByExpression) {
 		this.groupByExpression = groupByExpression;
 		return this;
 	}
 
-	public Query<X, R> orderBy(OrderExpression orderByExpression) {
+	public Query<R> orderBy(OrderExpression orderByExpression) {
 		this.orderByExpression = orderByExpression;
 		return this;
 	}
 
-	public static <T> Query<?, T> create(Class<T> resultType, CriteriaBuilder criteriaBuilder) {
+	public static <T> Query<T> create(Class<T> resultType, CriteriaBuilder criteriaBuilder) {
 		return new Query<>(criteriaBuilder, resultType);
 	}
 
-	public Query<X, R> distinct() {
+	public Query<R> distinct() {
 		query.distinct(true);
 		return this;
 	}
