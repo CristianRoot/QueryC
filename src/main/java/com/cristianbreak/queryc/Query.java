@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * Encapsulation of Criteria Query API
@@ -28,7 +27,7 @@ public class Query<R> {
 	private List<Join> joinList;
 	private List<Predicate> filterList;
 	private BiFunction<FromSupplier, CriteriaBuilder, Selection<? extends R>> selectionSupplier;
-	private Function<FromSupplier, Expression> groupByExpression;
+	private GroupByExpression groupByExpression;
 	private OrderExpression orderByExpression;
 
 	private Query(CriteriaBuilder criteriaBuilder, Class<R> resultType) {
@@ -148,7 +147,7 @@ public class Query<R> {
 		}
 
 		if (groupByExpression != null) {
-			query = query.groupBy(groupByExpression.apply(this::getFrom));
+			query = query.groupBy(groupByExpression.apply(this::getFrom, cBuilder));
 		}
 
 		if (orderByExpression != null) {
@@ -171,7 +170,7 @@ public class Query<R> {
 		return this;
 	}
 
-	public Query<R> groupBy(Function<FromSupplier, Expression> groupByExpression) {
+	public Query<R> groupBy(GroupByExpression groupByExpression) {
 		this.groupByExpression = groupByExpression;
 		return this;
 	}
