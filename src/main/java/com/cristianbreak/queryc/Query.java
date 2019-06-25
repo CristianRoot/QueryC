@@ -20,24 +20,23 @@ import java.util.function.Function;
  * @param <X> Root type
  * @param <R> Result type
  */
+@SuppressWarnings({"unused", "SameParameterValue"})
 public class Query<X, R> {
 
-	CriteriaQuery<R> query;
-	CriteriaBuilder cBuilder;
-	Root<X> root;
-	List<Join> joinList;
-	List<Predicate> filterList;
-	boolean distinct;
-	BiFunction<FromSupplier, CriteriaBuilder, Selection> selectionSupplier;
-	Function<FromSupplier, Expression> groupByExpression;
-	BiFunction<FromSupplier, CriteriaBuilder, Order> orderByExpression;
+	private CriteriaQuery<R> query;
+	private CriteriaBuilder cBuilder;
+	private Root<X> root;
+	private List<Join> joinList;
+	private List<Predicate> filterList;
+	private BiFunction<FromSupplier, CriteriaBuilder, Selection<? extends R>> selectionSupplier;
+	private Function<FromSupplier, Expression> groupByExpression;
+	private OrderExpression orderByExpression;
 
-	Query(CriteriaBuilder criteriaBuilder, Class resultType) {
+	private Query(CriteriaBuilder criteriaBuilder, Class<R> resultType) {
 		joinList = new ArrayList<>();
 		filterList = new ArrayList<>();
 		cBuilder = criteriaBuilder;
 		query = cBuilder.createQuery(resultType);
-		distinct = false;
 	}
 
 	/**
@@ -47,7 +46,7 @@ public class Query<X, R> {
 	 * @param type Type that you need
 	 * @return {@link Root} or {@link Join} corresponding to {@param type}
 	 */
-	<T> From<?, T> getFrom(Class<T> type) {
+	private <T> From<?, T> getFrom(Class<T> type) {
 		From from;
 
 		if (root.getJavaType().equals(type)) {
@@ -70,7 +69,7 @@ public class Query<X, R> {
 		return query.getResultType();
 	}
 
-	public Query<X, R> from(Class from) {
+	public Query<X, R> from(Class<X> from) {
 		this.root = query.from(from);
 		return this;
 	}
@@ -103,7 +102,7 @@ public class Query<X, R> {
 		return join(from, to, JoinType.INNER);
 	}
 
-	public Query<X, R> join(Class from, Attribute to, JoinType type) {
+	private Query<X, R> join(Class<?> from, Attribute to, JoinType type) {
 		From leftPart = joinList.stream()
 								.filter(join -> join.getJavaType().equals(from))
 								.findFirst()
@@ -125,7 +124,7 @@ public class Query<X, R> {
 		return join(att, JoinType.RIGHT);
 	}
 
-	public Query<X, R> join(Attribute att, JoinType type) {
+	private Query<X, R> join(Attribute att, JoinType type) {
 		From leftPart;
 
 		if (joinList.isEmpty()) {
@@ -139,7 +138,7 @@ public class Query<X, R> {
 		return this;
 	}
 
-	public Query<X, R> select(BiFunction<FromSupplier, CriteriaBuilder, Selection> selectionSupplier) {
+	public Query<X, R> select(BiFunction<FromSupplier, CriteriaBuilder, Selection<? extends R>> selectionSupplier) {
 		this.selectionSupplier = selectionSupplier;
 		return this;
 	}
@@ -162,7 +161,7 @@ public class Query<X, R> {
 
 	public Query<X, R> where(List<Filter> filters) {
 		for (Filter filter : filters) {
-			Predicate p = filter.apply(this::getFrom, cBuilder);
+			Predicate p = filter.apply(this::getFrom, cBuilder, query);
 			filterList.add(p);
 		}
 
@@ -178,7 +177,7 @@ public class Query<X, R> {
 		return this;
 	}
 
-	public Query<X, R> orderBy(BiFunction<FromSupplier, CriteriaBuilder, Order> orderByExpression) {
+	public Query<X, R> orderBy(OrderExpression orderByExpression) {
 		this.orderByExpression = orderByExpression;
 		return this;
 	}

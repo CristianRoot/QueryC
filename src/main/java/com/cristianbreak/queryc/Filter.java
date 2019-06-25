@@ -5,9 +5,9 @@
 package com.cristianbreak.queryc;
 
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
-import java.util.function.BiFunction;
 
-public interface Filter extends BiFunction<FromSupplier, CriteriaBuilder, Predicate> {
+public interface Filter extends TriFunction<FromSupplier, CriteriaBuilder, CriteriaQuery, Predicate> {
 
 }
